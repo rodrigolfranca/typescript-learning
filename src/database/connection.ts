@@ -1,6 +1,6 @@
 import {PoolConfig, Pool} from 'pg'
 import dotenv from 'dotenv'
-dotenv.config({path: __dirname+"../../"})
+dotenv.config()
 
 const config: PoolConfig = {
     user: process.env.DATABASE_USER,

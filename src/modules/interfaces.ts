@@ -1,12 +1,12 @@
-interface PointsFeatureCollection {
+interface FeatureCollection {
     type: String,
-    features: Array<PointsFeatures>,
+    features: Array<Features>,
 }
 
-interface PointsFeatures {
+interface Features {
     type: String,
     properties: Object,
-    geometry: PointsGeometry,
+    geometry: PointsGeometry | PolygonGeometry,
 }
 
 interface PointsGeometry {
@@ -14,4 +14,9 @@ interface PointsGeometry {
     type: "Point"
 }
 
-export { PointsFeatureCollection, PointsFeatures, PointsGeometry }
+interface PolygonGeometry {
+    coordinates: Array<Array<Array<Number>>>
+    type: "Polygon"
+}
+
+export { FeatureCollection, Features, PointsGeometry, PolygonGeometry }
