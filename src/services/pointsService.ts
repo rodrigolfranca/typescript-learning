@@ -6,6 +6,8 @@ type viewService = (id: Number) => Promise<FeatureCollection>
 type createService = (name: String, geom: PointsGeometry) => Promise<Number>
 type updateService = (id: Number, name: String, geom: PointsGeometry) => Promise<Number>
 type deleteService = (id: Number) => void
+type getDistanceService = (id1: Number, id2: Number) => Promise<Number>
+type isInService = (idPoint: Number, idPolygon: Number) => Promise<Boolean>
 
 interface PointsService {
     list: listService,
@@ -13,6 +15,8 @@ interface PointsService {
     create: createService,
     update: updateService,
     delete: deleteService,
+    getDistance: getDistanceService,
+    isIn: isInService,
 }
 
 const pointsService: PointsService = {
@@ -99,6 +103,37 @@ const pointsService: PointsService = {
         const values = [id];
         try {
             await pool.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+    },
+    getDistance : async (id1: Number, id2: Number): Promise<Number>  => {
+        console.log('Points Service: Selecting Distance');
+        const query = `
+        SELECT ST_DISTANCE(
+            ST_Transform(p1.geom, 2163),
+            ST_Transform(p2.geom, 2163))
+        AS distance_in_meters
+        FROM points p1, points p2
+        WHERE p1.id = $1 AND p2.id = $2;`;
+        const values = [id1, id2];
+        try {
+            const data = await pool.query(query, values);
+            return data.rows[0].distance_in_meters;
+        } catch (err) {
+            throw err;
+        }
+    },
+    isIn: async (idPoint: Number, idPolygon: Number): Promise<Boolean> => {
+        console.log('Service: point in polygon');
+        const query = `
+        SELECT ST_Contains(polygon.geom, point.geom)
+        FROM points point, polygons polygon
+        WHERE point.id=$1 AND polygon.id=$2;`;
+        const values = [idPoint, idPolygon];
+        try {
+            const data = await pool.query(query, values);
+            return data.rows[0].ST_Contains;
         } catch (err) {
             throw err;
         }

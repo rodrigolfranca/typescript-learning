@@ -8,14 +8,15 @@ interface PolygonsController {
     create: RequestHandler,
     update: RequestHandler,
     delete: RequestHandler,
-}
+    search: RequestHandler,
+};
 
 const polygonsController: PolygonsController = {
     list : async (req: Request, res: Response): Promise<Response> => {
-        console.log("Polygons Controller: List")
+        console.log("Polygons Controller: List");
         try {
             const data: FeatureCollection = await polygonsService.list();
-            return res.status(200).json(data)
+            return res.status(200).json(data);
         }catch(err){
             return res.status(500).json({
                 message: 'Controller Error: failed access to database',
@@ -27,10 +28,10 @@ const polygonsController: PolygonsController = {
         console.log("Polygons Controller: View");
         const id: Number = Number(req.params.id);
         try {
-            const data: FeatureCollection = await polygonsService.view(id)
+            const data: FeatureCollection = await polygonsService.view(id);
             return res.status(200).json(data);
         } catch (err) {
-            return res.status(500)
+            return res.status(500);
         }        
     },
     create: async (req, res) => {
@@ -48,7 +49,7 @@ const polygonsController: PolygonsController = {
         }
     },
     update : async (req: Request, res: Response): Promise<Response> => {
-        console.log('Points Controller: Updating one');
+        console.log('Polygons Controller: Updating one');
         const id: Number = Number(req.body.id);
         const name: String = req.body.geojson.features[0].properties.name;
         const geom: PolygonsGeometry = req.body.geojson.features[0].geometry;
@@ -76,7 +77,7 @@ const polygonsController: PolygonsController = {
         }
     },
     delete : async (req: Request, res: Response): Promise<Response> => {
-        console.log('Points Controller: Delete');
+        console.log('Polygons Controller: Delete');
         const {id} = req.body;
         try {
             polygonsService.delete(id);
@@ -88,6 +89,20 @@ const polygonsController: PolygonsController = {
             });
         }
     },
-}
+    // busca lugares(pontos) dentro de uma área(poligono)
+    search: async (req: Request, res: Response): Promise<Response> => {
+        console.log('Polygons Controller: Search Points inside');
+        const id: Number = Number(req.params.id);
+        try {
+            const data = await polygonsService.search(id);
+            return res.status(200).json(data);
+        } catch (err) {
+            return res.status(500).json({
+                message: 'Controller Error: failed access to database',
+                err: err,
+            });
+        }
+    },
+};
 
 export default polygonsController;

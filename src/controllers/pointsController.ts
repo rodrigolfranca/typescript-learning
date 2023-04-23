@@ -8,6 +8,8 @@ interface PointsController {
     create: RequestHandler,
     update: RequestHandler,
     delete: RequestHandler,
+    getDistance: RequestHandler,
+    isIn: RequestHandler,    
 }
 
 const pointsController: PointsController = {
@@ -81,6 +83,37 @@ const pointsController: PointsController = {
         try {
             pointsService.delete(id);
             return res.status(204).json({});
+        } catch (err) {
+            return res.status(500).json({
+                message: 'Controller Error: failed access to database',
+                err: err,
+            });
+        }
+    },
+    // determinar a distancia entre dois lugares (pontos)
+    getDistance: async (req: Request, res: Response): Promise<Response> => {
+        console.log('Points Controller: Distance Between');
+        const id1: Number = Number(req.body.id1);
+        const id2: Number = Number(req.body.id2);
+        try {
+            const data = await pointsService.getDistance(id1, id2);            
+            if (!data) return res.status(400).json({'message': 'non-existent id'});
+            return res.status(200).json(data);
+        } catch (err) {
+            return res.status(500).json({
+                message: 'Controller Error: failed access to database',
+                err: err,
+            });
+        }
+    },
+    // verificar se um lugar(ponto) esta em uma área(poligono)
+    isIn: async (req: Request, res: Response): Promise<Response> => {
+        console.log('Points Controller: Point in Polygon?');
+        const {idPoint, idPolygon} = req.body;
+        try {
+            const data = await pointsService.isIn(idPoint as Number, idPolygon as Number);
+            if (!data) return res.status(400).json({'message': 'O lugar não esta na área ou não existe'});
+            return res.status(200).json({'message': 'O lugar esta na área'});
         } catch (err) {
             return res.status(500).json({
                 message: 'Controller Error: failed access to database',

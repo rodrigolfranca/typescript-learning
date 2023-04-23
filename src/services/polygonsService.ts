@@ -6,6 +6,8 @@ type viewService = (id: Number) => Promise<FeatureCollection>
 type createService = (name: String, geom: PolygonsGeometry) => Promise<Number>
 type updateService = (id: Number, name: String, geom: PolygonsGeometry) => Promise<Number>
 type deleteService = (id: Number) => void
+type searchService = (id: Number) => Promise<FeatureCollection>
+
 
 interface PolygonsService {
     list: listService,
@@ -13,6 +15,7 @@ interface PolygonsService {
     create: createService,
     update: updateService,
     delete: deleteService,
+    search: searchService
 }
 
 const polygonsService: PolygonsService = {
@@ -99,6 +102,32 @@ const polygonsService: PolygonsService = {
         const values = [id];
         try {
             await pool.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+    },
+    search: async (id: Number): Promise<FeatureCollection> => {
+        console.log('Service: Checking Points in a Polygon');
+        const query = `
+        SELECT
+        json_build_object(
+            'type', 'FeatureCollection',
+            'features', json_agg(
+                json_build_object(
+                    'type', 'Feature',
+                    'geometry', ST_AsGeoJSON(geom)::json,
+                    'properties', json_build_object('name', name, 'id', id)
+                )
+            )
+        ) AS geojson
+        FROM points
+        WHERE ST_Contains(
+            (SELECT geom FROM polygons WHERE id = $1),
+            points.geom);`;
+        const values = [id];
+        try {
+            const data = await pool.query(query, values);
+            return data.rows[0].geojson as FeatureCollection;
         } catch (err) {
             throw err;
         }
