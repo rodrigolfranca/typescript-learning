@@ -5,8 +5,13 @@ interface FeatureCollection {
 
 interface Features {
     type: String,
-    properties: Object,
-    geometry: PointsGeometry | PolygonGeometry,
+    properties: Properties,
+    geometry: PointsGeometry | PolygonsGeometry,
+}
+
+interface Properties {
+    name: String
+    id?: Number
 }
 
 interface PointsGeometry {
@@ -14,9 +19,9 @@ interface PointsGeometry {
     type: "Point"
 }
 
-interface PolygonGeometry {
+interface PolygonsGeometry {
     coordinates: Array<Array<Array<Number>>>
     type: "Polygon"
 }
 
-export { FeatureCollection, Features, PointsGeometry, PolygonGeometry }
+export { FeatureCollection, Features, PointsGeometry, PolygonsGeometry }

@@ -1,8 +1,8 @@
 import { Request, Response, RequestHandler } from "express";
-import pointsService from "../services/pointsService";
-import { FeatureCollection, PointsGeometry } from "../modules/interfaces";
+import { FeatureCollection, PolygonsGeometry } from "../modules/interfaces";
+import polygonsService from "../services/polygonsService";
 
-interface PointsController {
+interface PolygonsController {
     list: RequestHandler,
     view: RequestHandler,
     create: RequestHandler,
@@ -10,11 +10,11 @@ interface PointsController {
     delete: RequestHandler,
 }
 
-const pointsController: PointsController = {
+const polygonsController: PolygonsController = {
     list : async (req: Request, res: Response): Promise<Response> => {
-        console.log("Points Controller: List")
+        console.log("Polygons Controller: List")
         try {
-            const data: FeatureCollection = await pointsService.list();
+            const data: FeatureCollection = await polygonsService.list();
             return res.status(200).json(data)
         }catch(err){
             return res.status(500).json({
@@ -24,21 +24,21 @@ const pointsController: PointsController = {
         }
     },
     view : async (req: Request, res: Response): Promise<Response> => {
-        console.log("Points Controller: View");
+        console.log("Polygons Controller: View");
         const id: Number = Number(req.params.id);
         try {
-            const data: FeatureCollection = await pointsService.view(id)            
+            const data: FeatureCollection = await polygonsService.view(id)
             return res.status(200).json(data);
         } catch (err) {
             return res.status(500)
         }        
     },
     create: async (req, res) => {
-        console.log('Points Controller: Create');
+        console.log('Polygons Controller: Create');
         const name: String = req.body.geojson.features[0].properties.name;
-        const geom: PointsGeometry = req.body.geojson.features[0].geometry;
+        const geom: PolygonsGeometry = req.body.geojson.features[0].geometry;
         try {
-            const id: Number = await pointsService.create(name, geom);
+            const id: Number = await polygonsService.create(name, geom);
             return res.status(201).json({created_id: id});
         } catch (err) {
             return res.status(500).json({
@@ -51,12 +51,12 @@ const pointsController: PointsController = {
         console.log('Points Controller: Updating one');
         const id: Number = Number(req.body.id);
         const name: String = req.body.geojson.features[0].properties.name;
-        const geom: PointsGeometry = req.body.geojson.features[0].geometry;
+        const geom: PolygonsGeometry = req.body.geojson.features[0].geometry;
         try {
-            const data: FeatureCollection = await pointsService.view(id);            
+            const data: FeatureCollection = await polygonsService.view(id);            
             if (JSON.stringify(data.features[0]) !== JSON.stringify(req.body.geojson.features[0])) {
                 try {
-                    const novo: Number = await pointsService.update(id, name, geom);
+                    const novo: Number = await polygonsService.update(id, name, geom);
                     return res.status(200).json({updated_id: novo});
                 } catch (err) { 
                     return res.status(500).json({
@@ -79,7 +79,7 @@ const pointsController: PointsController = {
         console.log('Points Controller: Delete');
         const {id} = req.body;
         try {
-            pointsService.delete(id);
+            polygonsService.delete(id);
             return res.status(204).json({});
         } catch (err) {
             return res.status(500).json({
@@ -90,4 +90,4 @@ const pointsController: PointsController = {
     },
 }
 
-export default pointsController;
+export default polygonsController;

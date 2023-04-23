@@ -1,13 +1,13 @@
 import pool from "../database/connection";
-import { FeatureCollection, PointsGeometry } from "../modules/interfaces";
+import { FeatureCollection, PolygonsGeometry } from "../modules/interfaces";
 
 type listService = () => Promise<FeatureCollection>
 type viewService = (id: Number) => Promise<FeatureCollection>
-type createService = (name: String, geom: PointsGeometry) => Promise<Number>
-type updateService = (id: Number, name: String, geom: PointsGeometry) => Promise<Number>
+type createService = (name: String, geom: PolygonsGeometry) => Promise<Number>
+type updateService = (id: Number, name: String, geom: PolygonsGeometry) => Promise<Number>
 type deleteService = (id: Number) => void
 
-interface PointsService {
+interface PolygonsService {
     list: listService,
     view: viewService,
     create: createService,
@@ -15,9 +15,9 @@ interface PointsService {
     delete: deleteService,
 }
 
-const pointsService: PointsService = {
+const polygonsService: PolygonsService = {
     list : async (): Promise<FeatureCollection> => {
-        console.log('Points Service: Selecting All');
+        console.log('Polygons Service: Selecting All');
         const query = `
         SELECT
         json_build_object(
@@ -33,7 +33,7 @@ const pointsService: PointsService = {
                 )
             )
         ) AS geojson
-        FROM points`;
+        FROM polygons;`;
         try {
             const data = await pool.query(query);            
             return data.rows[0].geojson as FeatureCollection;;
@@ -42,7 +42,7 @@ const pointsService: PointsService = {
         }
     },
     view : async (id: Number): Promise<FeatureCollection> => {
-        console.log('Points Service: Selecting one');
+        console.log('Polygons Service: Selecting one');
         const query = `
         SELECT json_build_object(
             'type', 'FeatureCollection',
@@ -53,7 +53,7 @@ const pointsService: PointsService = {
                     'properties', json_build_object('name', name)
                 )
             )
-        ) as geojson FROM points WHERE id=$1;`;
+        ) as geojson FROM polygons WHERE id=$1;`;
         const values = [id];
         try {
             const data = await pool.query(query, values);            
@@ -62,10 +62,10 @@ const pointsService: PointsService = {
             throw err;
         }
     },
-    create : async (name: String, geom: PointsGeometry): Promise<Number> => {
-        console.log('Points Service: Posting One');
+    create : async (name: String, geom: PolygonsGeometry): Promise<Number> => {
+        console.log('Polygons Service: Posting One');
         const query = `
-        INSERT INTO points (name, geom)
+        INSERT INTO polygons (name, geom)
         VALUES ($1, ST_GeomFromGeoJSON($2))
         RETURNING id;`;
         const values = [name, geom];
@@ -76,10 +76,10 @@ const pointsService: PointsService = {
             throw err;
         }
     },
-    update : async (id: Number, name: String, geom: PointsGeometry): Promise<Number> => {
-        console.log('Points Service: Updating One');
+    update : async (id: Number, name: String, geom: PolygonsGeometry): Promise<Number> => {
+        console.log('Polygons Service: Updating One');
         const query = `
-        UPDATE points
+        UPDATE polygons
         SET name = $1, geom = ST_GeomFromGeoJSON($2)
         WHERE id = $3
         RETURNING id;`;
@@ -92,9 +92,9 @@ const pointsService: PointsService = {
         }
     },
     delete : async (id: Number) => {
-        console.log('Points Service: Deleting One');
+        console.log('Polygons Service: Deleting One');
         const query = `
-        DELETE FROM points
+        DELETE FROM polygons
         WHERE id = $1;`;        
         const values = [id];
         try {
@@ -105,4 +105,4 @@ const pointsService: PointsService = {
     },
 }
 
-export default pointsService;
+export default polygonsService;
